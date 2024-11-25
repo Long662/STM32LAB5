@@ -130,10 +130,11 @@ int main(void)
 //  char str[MAX_BUFFER_SIZE];
   while (1)
   {
-	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t *)"Hello\n", 6, 1000);
+	  uint8_t data[] = "Hello";
+	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, data, 5, 1000);
 	  if (status == HAL_OK)
 	  {
-		  HAL_GPIO_TogglePin(L_ED_RED_GPIO_Port, L_ED_RED_Pin);
+		  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 	  }
 	  HAL_Delay(500);
 //	  ADC_value = HAL_ADC_GetValue(&hadc1);
@@ -335,7 +336,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(L_ED_RED_GPIO_Port, L_ED_RED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_YELLOW_Pin */
   GPIO_InitStruct.Pin = LED_YELLOW_Pin;
@@ -350,12 +351,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : L_ED_RED_Pin */
-  GPIO_InitStruct.Pin = L_ED_RED_Pin;
+  /*Configure GPIO pin : LED_RED_Pin */
+  GPIO_InitStruct.Pin = LED_RED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(L_ED_RED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_RED_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -371,53 +372,53 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
-static uint8_t command_flag = 0;
-
-void command_praser_fsm(void)
-{
-	if (strstr((char *)buffer, "!RST#") != NULL)
-	{
-		command_flag = 1;
-	}
-	else if (strstr((char *)buffer, "!OK#") != NULL)
-	{
-		command_flag = 2;
-	}
-	else
-	{
-		command_flag = 0;
-	}
-	memset(buffer, 0, MAX_BUFFER_SIZE);
-	index_buffer = 0;
-}
-
-void uart_communication_fsm(void)
-{
-	static uint8_t resend_flag = 0;
-	static uint32_t last_time = 0;
-	char response[30];
-	uint32_t ADC_value = HAL_ADC_GetValue(&hadc1);
-
-	if (command_flag == 1)
-	{
-		sprintf(response, "!ADC=%lu#", ADC_value);
-		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
-		command_flag = 0;
-		resend_flag = 1;
-		last_time = HAL_GetTick();
-	}
-	if (resend_flag && (HAL_GetTick() - last_time > 3000))
-	{
-		sprintf(response, "!ADC=%lu#", ADC_value);
-		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
-		last_time = HAL_GetTick();
-	}
-	if (command_flag == 2)
-	{
-		resend_flag = 0;
-		command_flag = 0;
-	}
-}
+//static uint8_t command_flag = 0;
+//
+//void command_praser_fsm(void)
+//{
+//	if (strstr((char *)buffer, "!RST#") != NULL)
+//	{
+//		command_flag = 1;
+//	}
+//	else if (strstr((char *)buffer, "!OK#") != NULL)
+//	{
+//		command_flag = 2;
+//	}
+//	else
+//	{
+//		command_flag = 0;
+//	}
+//	memset(buffer, 0, MAX_BUFFER_SIZE);
+//	index_buffer = 0;
+//}
+//
+//void uart_communication_fsm(void)
+//{
+//	static uint8_t resend_flag = 0;
+//	static uint32_t last_time = 0;
+//	char response[30];
+//	uint32_t ADC_value = HAL_ADC_GetValue(&hadc1);
+//
+//	if (command_flag == 1)
+//	{
+//		sprintf(response, "!ADC=%lu#", ADC_value);
+//		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
+//		command_flag = 0;
+//		resend_flag = 1;
+//		last_time = HAL_GetTick();
+//	}
+//	if (resend_flag && (HAL_GetTick() - last_time > 3000))
+//	{
+//		sprintf(response, "!ADC=%lu#", ADC_value);
+//		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
+//		last_time = HAL_GetTick();
+//	}
+//	if (command_flag == 2)
+//	{
+//		resend_flag = 0;
+//		command_flag = 0;
+//	}
+//}
 
 /* USER CODE END 4 */
 
