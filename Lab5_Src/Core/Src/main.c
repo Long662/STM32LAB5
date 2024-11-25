@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
+#include "global.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,13 +44,21 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
 TIM_HandleTypeDef htim2;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+enum UART_State		UARTState = UART_IDLE;
+enum CMD_State		CMDState = CMD_IDLE;
+enum ERROR_State	ERRState = ERROR_IDLE;
 
+uint8_t flag_OK = 0;
+
+uint16_t TimerCounter = 0;
+uint8_t TimerFlag = 0;
+
+uint8_t is_RST = 0;
+uint8_t is_OK = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,25 +73,24 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define MAX_BUFFER_SIZE	30
-
-uint8_t temp = 0;
+uint8_t cmdBuffer[CMD_CONTENT_MAX_LENGTH];
 uint8_t buffer_flag = 0;
-uint8_t buffer[MAX_BUFFER_SIZE];
-uint8_t index_buffer;
-
-void command_praser_fsm(void);
-void uart_communication_fsm(void);
+uint8_t cmd_content_index = 0;
+uint8_t tempValue = 0;
 
 // Add the received character into a buffer
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == USART2)
 	{
-//		HAL_UART_Transmit(&huart2, &temp, 1, 50);
-		buffer[index_buffer++] = temp;
-		if(index_buffer == 30)	index_buffer = 0;
+		HAL_UART_Transmit(&huart2, &tempValue, 1, 50);
+		cmd_content_index++;
+		cmdBuffer[cmd_content_index] = tempValue;
 		buffer_flag = 1;
-		HAL_UART_Receive_IT(&huart2, &temp, 1);
+		if (cmd_content_index >= CMD_CONTENT_MAX_LENGTH)
+		{
+			cmd_content_index = -;
+		}
+		HAL_UART_Receive_IT(&huart2, &tempValue, 1);
 	}
 }
 /* USER CODE END 0 */
@@ -121,6 +129,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_UART_Receive_IT(&huart2, &temp, 1);
   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_ADC_Start(&hadc1);
+
+  char starting[50];
+  HAL_UART_Transmit(&huart2, (void *)starting, sprintf(starting, "STARTING STM32 UART LAB5\r\n"), 50);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -338,65 +350,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int counter = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	counter++;
-	if (counter >= 50)
-	{
-		counter = 0;
-		HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
-	}
+	timer_run();
 }
-
-static uint8_t command_flag = 0;
-
-void command_praser_fsm(void)
-{
-	if (strstr((char *)buffer, "!RST#") != NULL)
-	{
-		command_flag = 1;
-	}
-	else if (strstr((char *)buffer, "!OK#") != NULL)
-	{
-		command_flag = 2;
-	}
-	else
-	{
-		command_flag = 0;
-	}
-	memset(buffer, 0, MAX_BUFFER_SIZE);
-	index_buffer = 0;
-}
-
-void uart_communication_fsm(void)
-{
-	static uint8_t resend_flag = 0;
-	static uint32_t last_time = 0;
-	char response[30];
-	uint32_t ADC_value = HAL_ADC_GetValue(&hadc1);
-
-	if (command_flag == 1)
-	{
-		sprintf(response, "!ADC=%lu#", ADC_value);
-		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
-		command_flag = 0;
-		resend_flag = 1;
-		last_time = HAL_GetTick();
-	}
-	if (resend_flag && (HAL_GetTick() - last_time > 3000))
-	{
-		sprintf(response, "!ADC=%lu#", ADC_value);
-		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
-		last_time = HAL_GetTick();
-	}
-	if (command_flag == 2)
-	{
-		resend_flag = 0;
-		command_flag = 0;
-	}
-}
-
 /* USER CODE END 4 */
 
 /**
