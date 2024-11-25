@@ -7,7 +7,7 @@
 
 #include "error.h"
 
-uint8_t error_1[] = "\r\nERROR: CMD_NOT_EXISTED\r\n"
+uint8_t error_1[] = "\r\nERROR: CMD_NOT_EXISTED\r\n";
 uint8_t error_2[] = "\r\nERROR: BUFFER_IS_FULL\r\n";
 uint8_t error_3[] = "\r\nERROR: INVALID_INPUT\r\n";
 

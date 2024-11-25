@@ -11,6 +11,7 @@
 #include "main.h"
 #include "error.h"
 #include "timer.h"
+#include "uart_fsm.h"
 #include <string.h>
 #include "stdio.h"
 
@@ -18,6 +19,9 @@
 #define MIN_CMD_LENGTH				3
 #define RESPONSE_LENGTH				50
 #define TIMER_CYCLE					10
+
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
 
 enum UART_State {UART_IDLE, UART_RST, UART_WAIT_OK, UART_RESPONSE, UART_END, UART_ERROR};
 enum CMD_State {CMD_IDLE, CMD_R, CMD_S, CMD_T, CMD_O, CMD_K, CMD_EXCLAMATION, CMD_HASTAG_K, CMD_HASTAG_T};
@@ -31,9 +35,14 @@ extern uint8_t cmdBuffer[CMD_CONTENT_MAX_LENGTH];
 extern uint8_t cmd_content_index;
 extern uint8_t buffer_flag;
 
-extern int TimerCounter;
-extern int TimerFlag;
+extern uint16_t TimerCounter;
+extern uint8_t TimerFlag;
 
+extern uint32_t ADC_value;
+extern char response[RESPONSE_LENGTH];
 
+extern uint8_t flag_OK;
+extern uint8_t is_RST;
+extern uint8_t is_OK;
 
 #endif /* INC_GLOBAL_H_ */
