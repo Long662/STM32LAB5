@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,12 +61,24 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t temp = 0;
+#define MAX_BUFFER_SIZE	30
 
+uint8_t temp = 0;
+uint8_t buffer_flag = 0;
+uint8_t buffer[MAX_BUFFER_SIZE];
+uint8_t index_buffer;
+
+void command_praser_fsm(void);
+void uart_communication_fsm(void);
+
+// Add the received character into a buffer
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == USART2)
 	{
-		HAL_UART_Transmit(&huart2, &temp, 1, 50);
+//		HAL_UART_Transmit(&huart2, &temp, 1, 50);
+		buffer[index_buffer++] = temp;
+		if(index_buffer == 30)	index_buffer = 0;
+		buffer_flag = 1;
 		HAL_UART_Receive_IT(&huart2, &temp, 1);
 	}
 }
@@ -108,8 +122,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
-	  HAL_Delay(500);
+	  if(buffer_flag == 1)
+	  {
+		  command_praser_fsm();
+		  buffer_flag = 0;
+	  }
+	  uart_communication_fsm();
+//	  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+//	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -268,6 +288,53 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static uint8_t command_flag = 0;
+
+void command_praser_fsm(void)
+{
+	if (strstr((char *)buffer, "!RST#") != NULL)
+	{
+		command_flag = 1;
+	}
+	else if (strstr((char *)buffer, "!OK#") != NULL)
+	{
+		command_flag = 2;
+	}
+	else
+	{
+		command_flag = 0;
+	}
+	memset(buffer, 0, MAX_BUFFER_SIZE);
+	index_buffer = 0;
+}
+
+void uart_communication_fsm(void)
+{
+	static uint8_t resend_flag = 0;
+	static uint32_t last_time = 0;
+	char response[30];
+	uint32_t ADC_value = HAL_ADC_GetValue(&hadc1);
+
+	if (command_flag == 1)
+	{
+		sprintf(response, "!ADC=%lu#", ADC_value);
+		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
+		command_flag = 0;
+		resend_flag = 1;
+		last_time = HAL_GetTick();
+	}
+	if (resend_flag && (HAL_GetTick() - last_time > 3000))
+	{
+		sprintf(response, "!ADC=%lu", ADC_value);
+		HAL_UART_Transmit(&huart2, (uint8_t *)response, strlen(response), HAL_MAX_DELAY);
+		last_time = HAL_GetTick();
+	}
+	if (command_flag == 2)
+	{
+		resend_flag = 0;
+		command_flag = 0;
+	}
+}
 
 /* USER CODE END 4 */
 
