@@ -75,16 +75,16 @@ void command_praser_fsm(void);
 void uart_communication_fsm(void);
 
 // Add the received character into a buffer
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-	if (huart->Instance == USART2)
-	{
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+//	if (huart->Instance == USART2)
+//	{
 //		HAL_UART_Transmit(&huart2, &temp, 1, 50);
-		buffer[index_buffer++] = temp;
-		if(index_buffer == 30)	index_buffer = 0;
-		buffer_flag = 1;
-		HAL_UART_Receive_IT(&huart2, &temp, 1);
-	}
-}
+////		buffer[index_buffer++] = temp;
+////		if(index_buffer == 30)	index_buffer = 0;
+////		buffer_flag = 1;
+//		HAL_UART_Receive_IT(&huart2, &temp, 1);
+//	}
+//}
 /* USER CODE END 0 */
 
 /**
@@ -120,21 +120,32 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_UART_Receive_IT(&huart2, &temp, 1);
+  HAL_ADC_Start(&hadc1);
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+//  uint32_t ADC_value = 0;
+//  char str[MAX_BUFFER_SIZE];
   while (1)
   {
-	  if(buffer_flag == 1)
+	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t *)"Hello\n", 6, 1000);
+	  if (status == HAL_OK)
 	  {
-		  command_praser_fsm();
-		  buffer_flag = 0;
+		  HAL_GPIO_TogglePin(L_ED_RED_GPIO_Port, L_ED_RED_Pin);
 	  }
-	  uart_communication_fsm();
-//	  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+	  HAL_Delay(500);
+//	  ADC_value = HAL_ADC_GetValue(&hadc1);
+//	  sprintf(str, "ADC: %lu\n", ADC_value);
+//	  HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
 //	  HAL_Delay(500);
+//	  if(buffer_flag == 1)
+//	  {
+//		  command_praser_fsm();
+//		  buffer_flag = 0;
+//	  }
+//	  uart_communication_fsm();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -318,9 +329,13 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(L_ED_RED_GPIO_Port, L_ED_RED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : LED_YELLOW_Pin */
   GPIO_InitStruct.Pin = LED_YELLOW_Pin;
@@ -334,6 +349,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : L_ED_RED_Pin */
+  GPIO_InitStruct.Pin = L_ED_RED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(L_ED_RED_GPIO_Port, &GPIO_InitStruct);
 
 }
 
