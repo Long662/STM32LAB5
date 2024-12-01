@@ -12,5 +12,6 @@
 
 void timer_run(void);
 void setTimer(int duration);
+void setTimerLed(int duration);
 
 #endif /* INC_TIMER_H_ */

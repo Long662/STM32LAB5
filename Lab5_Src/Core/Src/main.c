@@ -56,9 +56,6 @@ enum ERROR_State	ERRState = ERROR_IDLE;
 
 uint8_t flag_OK = 0;
 
-uint16_t TimerCounter = 0;
-uint8_t TimerFlag = 0;
-
 uint8_t is_RST = 0;
 uint8_t is_OK = 0;
 /* USER CODE END PV */
@@ -139,8 +136,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  setTimerLed(500);
   while (1)
   {
+	  if(TimerFlag1 == 1){
+		  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+		  setTimerLed(500);
+	  }
 	  if(buffer_flag == 1)
 	  {
 		  command_praser_fsm();

@@ -37,6 +37,8 @@ extern uint8_t buffer_flag;
 
 extern uint16_t TimerCounter;
 extern uint8_t TimerFlag;
+extern uint16_t TimerCounter1;
+extern uint8_t TimerFlag1;
 
 extern uint32_t ADC_value;
 extern char response[RESPONSE_LENGTH];
