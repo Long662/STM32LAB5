@@ -6,9 +6,14 @@
  */
 #include "uart_fsm.h"
 
-uint32_t ADC_value = 0;\
+uint8_t cmdBuffer[CMD_CONTENT_MAX_LENGTH];
+uint8_t buffer_flag = 0;
+uint8_t cmd_content_index = 0;
+uint8_t tempValue = 0;
+
+uint32_t ADC_value = 0;
 char response[RESPONSE_LENGTH];
-uint8_t data[] = "HELLO WORD\r\n";
+//uint8_t data[] = "HELLO WORD\r\n";
 
 void uart_communication_fsm()
 {
@@ -20,8 +25,10 @@ void uart_communication_fsm()
 		break;
 	case UART_RESPONSE:
 		ADC_value = HAL_ADC_GetValue(&hadc1);
-		HAL_UART_Transmit(&huart2, (void *)response, sprintf(response, "!ADC%ld#\r\n", ADC_value), 1000);
-		HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		sprintf(response, "!ADC=%d#\r\n", ADC_value);
+		HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
+		HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
 		setTimer(3000);
 		UARTState = UART_WAIT_OK;
 		break;
@@ -32,8 +39,18 @@ void uart_communication_fsm()
 		}
 		break;
 	case UART_END:
-		if(is_OK == 1)	is_OK = 0;
-		HAL_UART_Transmit(&huart2, (void *)response, sprintf(response, "ERROR\r\n"), 1000);
+		if(is_OK == 0)
+		{
+			HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "ERROR\r\n"), 0x500);
+			HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+		}
+		else if(is_OK == 1)
+		{
+			is_OK = 0;
+			HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "END\r\n"), 0x500);
+		}
+		//HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
 		UARTState = UART_IDLE;
 		break;
 	default:
@@ -148,5 +165,21 @@ void command_praser_fsm()
 		break;
 	default:
 		break;
+	}
+}
+
+// Add the received character into a buffer
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	if (huart->Instance == USART1)
+	{
+		//HAL_UART_Transmit(&huart1, &tempValue, 1, 50);
+		cmd_content_index++;
+		cmdBuffer[cmd_content_index] = tempValue;
+		buffer_flag = 1;
+		if (cmd_content_index >= CMD_CONTENT_MAX_LENGTH)
+		{
+			cmd_content_index = 0;
+		}
+		HAL_UART_Receive_IT(&huart1, &tempValue, 1);
 	}
 }

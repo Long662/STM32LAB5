@@ -18,13 +18,13 @@ void errorHandle(void)
 	case ERROR_IDLE:
 		break;
 	case CMD_NOT_EXISTED:
-		HAL_UART_Transmit(&huart2, error_1, sizeof(error_1), 100);
+		HAL_UART_Transmit(&huart1, error_1, sizeof(error_1), 100);
 		break;
 	case BUFFER_IS_FULL:
-		HAL_UART_Transmit(&huart2, error_2, sizeof(error_2), 100);
+		HAL_UART_Transmit(&huart1, error_2, sizeof(error_2), 100);
 		break;
 	case INVALID_INPUT:
-		HAL_UART_Transmit(&huart2, error_3, sizeof(error_3), 100);
+		HAL_UART_Transmit(&huart1, error_3, sizeof(error_3), 100);
 		break;
 	default:
 		break;

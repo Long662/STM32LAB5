@@ -21,7 +21,7 @@
 #define TIMER_CYCLE					10
 
 extern ADC_HandleTypeDef hadc1;
-extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart1;
 
 enum UART_State {UART_IDLE, UART_RST, UART_WAIT_OK, UART_RESPONSE, UART_END, UART_ERROR};
 enum CMD_State {CMD_IDLE, CMD_R, CMD_S, CMD_T, CMD_O, CMD_K, CMD_EXCLAMATION, CMD_HASTAG_K, CMD_HASTAG_T};
@@ -46,5 +46,7 @@ extern char response[RESPONSE_LENGTH];
 extern uint8_t flag_OK;
 extern uint8_t is_RST;
 extern uint8_t is_OK;
+
+extern uint8_t tempValue;
 
 #endif /* INC_GLOBAL_H_ */
