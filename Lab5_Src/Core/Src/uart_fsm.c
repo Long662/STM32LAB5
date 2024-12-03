@@ -6,6 +6,9 @@
  */
 #include "uart_fsm.h"
 
+#define COUNT_TO_ERROR	3
+
+uint8_t count_to_err = 0;
 uint8_t cmdBuffer[CMD_CONTENT_MAX_LENGTH];
 uint8_t buffer_flag = 0;
 uint8_t cmd_content_index = 0;
@@ -21,9 +24,6 @@ void uart_communication_fsm()
 	case UART_IDLE:
 		break;
 	case UART_RST:
-		UARTState = UART_RESPONSE;
-		break;
-	case UART_RESPONSE:
 		ADC_value = HAL_ADC_GetValue(&hadc1);
 		sprintf(response, "!ADC=%d#\r\n", ADC_value);
 		HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
@@ -41,17 +41,27 @@ void uart_communication_fsm()
 	case UART_END:
 		if(is_OK == 0)
 		{
-			HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "ERROR\r\n"), 0x500);
-			HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+			count_to_err++;
+			if (count_to_err >= COUNT_TO_ERROR)
+			{
+				HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "ERROR\r\n"), 0x500);
+				HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+				UARTState = UART_IDLE;
+			}
+			else
+			{
+				UARTState = UART_RST;
+			}
 		}
 		else if(is_OK == 1)
 		{
 			is_OK = 0;
-			HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "END\r\n"), 0x500);
+			count_to_err = 0;
+			HAL_UART_Transmit(&huart1, (void *)response, sprintf(response, "COMPLETED\r\n"), 0x500);
+			UARTState = UART_IDLE;
 		}
 		//HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-		UARTState = UART_IDLE;
 		break;
 	default:
 		break;
