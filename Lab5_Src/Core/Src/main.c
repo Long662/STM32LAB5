@@ -55,7 +55,6 @@ enum CMD_State		CMDState = CMD_IDLE;
 enum ERROR_State	ERRState = ERROR_IDLE;
 
 uint8_t flag_OK = 0;
-
 uint8_t is_RST = 0;
 uint8_t is_OK = 0;
 /* USER CODE END PV */
@@ -123,6 +122,9 @@ int main(void)
 	  if(TimerFlag1 == 1)
 	  {
 		  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+		  if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+			  HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+		  }
 		  setTimerLed(500);
 	  }
 	  if(buffer_flag == 1)
@@ -319,21 +321,15 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_YELLOW_Pin|LED_BLUE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LED_RED_Pin|LED_GREEN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LED_YELLOW_Pin */
-  GPIO_InitStruct.Pin = LED_YELLOW_Pin;
+  /*Configure GPIO pins : LED_YELLOW_Pin LED_BLUE_Pin */
+  GPIO_InitStruct.Pin = LED_YELLOW_Pin|LED_BLUE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_YELLOW_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 

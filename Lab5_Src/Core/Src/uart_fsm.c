@@ -13,7 +13,6 @@ uint8_t cmdBuffer[CMD_CONTENT_MAX_LENGTH];
 uint8_t buffer_flag = 0;
 uint8_t cmd_content_index = 0;
 uint8_t tempValue = 0;
-
 uint32_t ADC_value = 0;
 char response[RESPONSE_LENGTH];
 //uint8_t data[] = "HELLO WORD\r\n";
@@ -24,13 +23,22 @@ void uart_communication_fsm()
 	case UART_IDLE:
 		break;
 	case UART_RST:
-		ADC_value = HAL_ADC_GetValue(&hadc1);
-		sprintf(response, "!ADC=%d#\r\n", ADC_value);
-		HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
-		HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
-		setTimer(3000);
-		UARTState = UART_WAIT_OK;
+		if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+		{
+			ADC_value = HAL_ADC_GetValue(&hadc1);
+			sprintf(response, "!ADC=%lu#\r\n", ADC_value);
+			HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
+			HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+			setTimer(3000);
+			UARTState = UART_WAIT_OK;
+		}
+		else
+		{
+	        sprintf(response, "ADC_ERROR\r\n");
+	        HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
+	        UARTState = UART_IDLE;
+		}
 		break;
 	case UART_WAIT_OK:
 		if(TimerFlag == 1)
