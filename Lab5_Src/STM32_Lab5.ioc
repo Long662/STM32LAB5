@@ -1,12 +1,14 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-0\#ChannelRegularConversion=ADC_CHANNEL_1
 ADC1.ContinuousConvMode=ENABLE
+ADC1.EnableAnalogWatchDog=true
 ADC1.EnableInjectedConversion=DISABLE
 ADC1.EnableRegularConversion=ENABLE
-ADC1.IPParameters=ContinuousConvMode,EnableInjectedConversion,EnableRegularConversion,Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,NbrOfConversionFlag,master
+ADC1.IPParameters=ContinuousConvMode,EnableInjectedConversion,EnableRegularConversion,Rank-0\#ChannelRegularConversion,Channel-0\#ChannelRegularConversion,SamplingTime-0\#ChannelRegularConversion,NbrOfConversionFlag,master,EnableAnalogWatchDog,WatchdogChannel
 ADC1.NbrOfConversionFlag=1
 ADC1.Rank-0\#ChannelRegularConversion=1
 ADC1.SamplingTime-0\#ChannelRegularConversion=ADC_SAMPLETIME_1CYCLE_5
+ADC1.WatchdogChannel=ADC_CHANNEL_1
 ADC1.master=1
 File.Version=6
 GPIO.groupedBy=Group By Peripherals

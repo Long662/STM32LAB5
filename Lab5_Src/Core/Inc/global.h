@@ -25,7 +25,7 @@ extern UART_HandleTypeDef huart1;
 
 enum UART_State {UART_IDLE, UART_RST, UART_WAIT_OK, UART_END, UART_ERROR};
 enum CMD_State {CMD_IDLE, CMD_R, CMD_S, CMD_T, CMD_O, CMD_K, CMD_EXCLAMATION, CMD_HASTAG_K, CMD_HASTAG_T};
-enum ERROR_State {ERROR_IDLE, CMD_NOT_EXISTED, BUFFER_IS_FULL, INVALID_INPUT};
+enum ERROR_State {ERROR_IDLE, CMD_NOT_EXISTED, BUFFER_IS_FULL, INVALID_INPUT, NOT_REQUEST_YET, ADC_ERR};
 
 extern enum UART_State UARTState;
 extern enum CMD_State CMDState;
@@ -40,12 +40,13 @@ extern uint8_t TimerFlag;
 extern uint16_t TimerCounter1;
 extern uint8_t TimerFlag1;
 
-extern uint32_t ADC_value;
+extern volatile uint32_t ADC_value;
 extern char response[RESPONSE_LENGTH];
 
 extern uint8_t flag_OK;
 extern uint8_t is_RST;
 extern uint8_t is_OK;
+extern uint8_t request_flag;
 
 extern uint8_t tempValue;
 

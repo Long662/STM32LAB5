@@ -2,7 +2,7 @@
  * timer.c
  *
  *  Created on: Nov 25, 2024
- *      Author: HP WORK
+ *      Author: NGUYEN THANH LONG_2011554
  */
 
 
