@@ -1,3 +1,3 @@
 uart_fsm.c:23:6:uart_communication_fsm	8	static
-uart_fsm.c:96:6:command_praser_fsm	4	static
-uart_fsm.c:282:6:HAL_UART_RxCpltCallback	16	static
+uart_fsm.c:91:6:command_praser_fsm	4	static
+uart_fsm.c:240:6:HAL_UART_RxCpltCallback	16	static

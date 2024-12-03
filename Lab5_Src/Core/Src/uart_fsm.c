@@ -28,21 +28,18 @@ void uart_communication_fsm()
 		break;
 	case UART_RST:
 		request_flag = 1;
-		if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+		if (HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK)
 		{
+			// Get ADC conversion value
 			ADC_value = HAL_ADC_GetValue(&hadc1);
 			sprintf(response, "!ADC=%lu#\r\n", ADC_value);
 			HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
-			HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
 			setTimer(3000);
 			ERRState = ERROR_IDLE;
 			UARTState = UART_WAIT_OK;
 		}
 		else
 		{
-//	        sprintf(response, "ADC_ERROR\r\n");
-//	        HAL_UART_Transmit(&huart1, (uint8_t*)response, strlen(response), 0x500);
 	        ERRState = ADC_ERR;
 	        UARTState = UART_IDLE;
 		}
@@ -60,8 +57,6 @@ void uart_communication_fsm()
 			count_to_err++;
 			if (count_to_err >= COUNT_TO_ERROR)
 			{
-				HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
-				HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
 				ERRState = CMD_NOT_EXISTED;
 				UARTState = UART_IDLE;
 			}
@@ -101,22 +96,22 @@ void command_praser_fsm()
 		if(cmdBuffer[cmd_content_index] == '!')
 		{
 			CMDState = CMD_EXCLAMATION;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if (cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			cmd_content_index = 0;
 			CMDState = CMD_IDLE;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
+			ERRState = ERROR_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
 	case CMD_EXCLAMATION:
 		if (cmdBuffer[cmd_content_index] == 'R'){
 			CMDState = CMD_R;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if (cmdBuffer[cmd_content_index] == 'O')
 		{
@@ -129,29 +124,19 @@ void command_praser_fsm()
 			cmd_content_index = 0;
 			UARTState = UART_ERROR;
 		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
-			UARTState = UART_ERROR;
-		}
 		break;
 	case CMD_R:
 		if(cmdBuffer[cmd_content_index] == 'S')
 		{
 			CMDState = CMD_S;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
 			ERRState = INVALID_INPUT;
 			cmd_content_index = 0;
-			UARTState = UART_ERROR;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
@@ -159,18 +144,14 @@ void command_praser_fsm()
 		if(cmdBuffer[cmd_content_index] == 'T')
 		{
 			CMDState = CMD_T;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
 			ERRState = INVALID_INPUT;
 			cmd_content_index = 0;
-			UARTState = UART_ERROR;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
@@ -178,18 +159,14 @@ void command_praser_fsm()
 		if(cmdBuffer[cmd_content_index] == '#')
 		{
 			CMDState = CMD_HASTAG_T;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
 			ERRState = INVALID_INPUT;
 			cmd_content_index = 0;
-			UARTState = UART_ERROR;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
@@ -197,18 +174,14 @@ void command_praser_fsm()
 		if(cmdBuffer[cmd_content_index] == 'K')
 		{
 			CMDState = CMD_K;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
 			ERRState = INVALID_INPUT;
 			cmd_content_index = 0;
-			UARTState = UART_ERROR;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
@@ -216,18 +189,14 @@ void command_praser_fsm()
 		if(cmdBuffer[cmd_content_index] == '#')
 		{
 			CMDState = CMD_HASTAG_K;
+			ERRState = ERROR_IDLE;
+			UARTState = UART_IDLE;
 		}
 		else if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
 			ERRState = INVALID_INPUT;
 			cmd_content_index = 0;
-			UARTState = UART_ERROR;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
 			UARTState = UART_ERROR;
 		}
 		break;
@@ -250,25 +219,14 @@ void command_praser_fsm()
 				UARTState = UART_ERROR;
 			}
 		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
-			UARTState = UART_ERROR;
-		}
 		break;
 	case CMD_HASTAG_T:
 		if(cmdBuffer[cmd_content_index] == '\r' || cmdBuffer[cmd_content_index] == '\n')
 		{
 			CMDState = CMD_IDLE;
+			ERRState = ERROR_IDLE;
 			cmd_content_index = 0;
 			UARTState = UART_RST;
-		}
-		else
-		{
-			ERRState = INVALID_INPUT;
-			CMDState = CMD_IDLE;
-			UARTState = UART_ERROR;
 		}
 		break;
 	default:

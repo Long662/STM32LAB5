@@ -22,6 +22,7 @@
 
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
+extern TIM_HandleTypeDef htim2;
 
 enum UART_State {UART_IDLE, UART_RST, UART_WAIT_OK, UART_END, UART_ERROR};
 enum CMD_State {CMD_IDLE, CMD_R, CMD_S, CMD_T, CMD_O, CMD_K, CMD_EXCLAMATION, CMD_HASTAG_K, CMD_HASTAG_T};
@@ -49,5 +50,7 @@ extern uint8_t is_OK;
 extern uint8_t request_flag;
 
 extern uint8_t tempValue;
+
+void global_Init(void);
 
 #endif /* INC_GLOBAL_H_ */
